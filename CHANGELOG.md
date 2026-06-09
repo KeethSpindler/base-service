@@ -37,4 +37,5 @@ Use this template for each new release:
 - Added Unit tests for Base Service
 - Added Changelog markdown
 - Added initial README markdown
+- Added Dockefile and .dockerignore Files
 - Initial Commit
