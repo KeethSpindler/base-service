@@ -1,0 +1,18 @@
+[project]
+name = "base-service"
+version = "0.1.0"
+description = "Base service component used as the foundation for building microservices."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["base_service"]
+default_section = "THIRDPARTY"
+
