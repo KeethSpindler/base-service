@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.black]
 line-length = 88
 target-version = ["py38"]
@@ -15,4 +18,14 @@ profile = "black"
 line_length = 88
 known_first_party = ["base_service"]
 default_section = "THIRDPARTY"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=src/base_service --cov-report=html"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+]
 
