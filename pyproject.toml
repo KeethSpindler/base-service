@@ -4,7 +4,14 @@ version = "0.1.0"
 description = "Base service component used as the foundation for building microservices."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "aio-pika>=10.0.1",
+    "async-sqlalchemy>=1.0.0",
+    "fastapi>=0.141.1",
+    "motor>=3.7.1",
+    "pydantic>=2.13.4",
+    "returns>=0.29.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -27,5 +34,6 @@ addopts = "--cov=src/base_service --cov-report=html"
 dev = [
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
+    "python-dotenv>=1.2.2",
 ]
 
