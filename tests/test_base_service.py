@@ -40,10 +40,10 @@ class UtilityComponent(BaseComponent):
 class ServiceWithStartup(BaseService):
 	def __init__(self) -> None:
 		super().__init__()
-		self.startup_called = False
+		self.bootstrap_called = False
 
-	async def startup(self) -> None:
-		self.startup_called = True
+	async def bootstrap(self) -> None:
+		self.bootstrap_called = True
 
 
 def test_builder_registers_components_and_builds_service() -> None:
@@ -51,7 +51,7 @@ def test_builder_registers_components_and_builds_service() -> None:
 
 	service = (
 		BaseServiceBuilder()
-		.with_component(runner, ServiceRegistry.RUNNER)
+		.with_component(ServiceRegistry.RUNNER, runner)
 		.build()
 	)
 
@@ -63,10 +63,10 @@ def test_add_component_raises_on_duplicate_registry_key() -> None:
 	first = RunComponent()
 	second = UtilityComponent()
 
-	service.add_component(first, ServiceRegistry.RUNNER)
+	service.add_component(ServiceRegistry.RUNNER, first)
 
 	with pytest.raises(ValueError, match="already exists"):
-		service.add_component(second, ServiceRegistry.RUNNER)
+		service.add_component(ServiceRegistry.RUNNER, second)
 
 
 def test_run_initializes_components_calls_startup_and_only_overridden_run() -> None:
@@ -74,14 +74,14 @@ def test_run_initializes_components_calls_startup_and_only_overridden_run() -> N
 	runner = RunComponent()
 	utility = UtilityComponent()
 
-	service.add_component(runner, ServiceRegistry.RUNNER)
-	service.add_component(utility, ServiceRegistry.UTILITY)
+	service.add_component(ServiceRegistry.RUNNER, runner)
+	service.add_component(ServiceRegistry.UTILITY, utility)
 
 	asyncio.run(service.run())
 
 	assert runner.initialized is True
 	assert utility.initialized is True
-	assert service.startup_called is True
+	assert service.bootstrap_called is True
 	assert runner.ran is True
 
 
@@ -90,8 +90,8 @@ def test_shutdown_only_calls_overridden_stop() -> None:
 	runner = RunComponent()
 	utility = UtilityComponent()
 
-	service.add_component(runner, ServiceRegistry.RUNNER)
-	service.add_component(utility, ServiceRegistry.UTILITY)
+	service.add_component(ServiceRegistry.RUNNER, runner)
+	service.add_component(ServiceRegistry.UTILITY, utility)
 
 	asyncio.run(service.shutdown())
 
