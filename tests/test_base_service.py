@@ -1,14 +1,13 @@
 import asyncio
-from enum import auto
+from enum import StrEnum, auto
 
 import pytest
 
 from base_service.base_service import BaseService, BaseServiceBuilder
 from base_service.core.components.base_component import BaseComponent
-from base_service.core.enums.component_registry import ComponentRegistry
 
 
-class ServiceRegistry(ComponentRegistry):
+class ServiceRegistry(StrEnum):
 	RUNNER = auto()
 	UTILITY = auto()
 
@@ -35,6 +34,12 @@ class UtilityComponent(BaseComponent):
 
 	def initialize(self):
 		self.initialized = True
+
+	async def run(self) -> None:
+		pass
+
+	async def stop(self) -> None:
+		pass
 
 
 class ServiceWithStartup(BaseService):

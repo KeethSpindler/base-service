@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Base service component used as the foundation for building microservices."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fastapi>=0.117.0",
+    "pydantic>=2.13.5",
+    "uvicorn>=0.37.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,1 +1,2 @@
 from base_service.core.components.base_component import BaseComponent
+from base_service.core.components.fastapi_component import FastAPIComponent
