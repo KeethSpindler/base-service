@@ -25,6 +25,12 @@ Use this template for each new release:
 
 ## Entries
 
+### [0.2.0] - 2026-11-09 (Keeth Spindler)
+
+#### Features
+
+- Added FastAPI Component and wiring to Base Service and it's Builder
+
 ### [0.1.0] - 2026-06-08 (Keeth Spindler)
 
 #### Features

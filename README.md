@@ -1,6 +1,6 @@
 # base-service
 
-Foundation library for building component-driven microservices. Provides a `BaseService` container and `BaseComponent` interface intended to be inherited and extended — not run directly.
+Foundation library for building component-driven microservices. Provides a `BaseService` container, a fluent builder, and reusable components.
 
 ## Concepts
 
@@ -9,21 +9,27 @@ Foundation library for building component-driven microservices. Provides a `Base
 The service container. Manages the lifecycle of all registered components:
 
 1. **Initialize** — calls `initialize()` on every component.
-2. **Startup** — runs the overridable `startup()` hook for any pre-run service logic.
+2. **Startup** — runs the overridable `startup()` hook for any pre-run service logic. The legacy `bootstrap()` hook delegates to `startup()`.
 3. **Run** — concurrently gathers `run()` coroutines for all components that override it.
 4. **Shutdown** — concurrently gathers `stop()` coroutines for all components that override it.
 
 Subclass `BaseService` to create a concrete service. Override `startup()` to inject logic that runs after components are initialized but before they start.
 
 ```python
-class MyService(BaseService):
-    async def startup(self) -> None:
-        print("All components initialized, starting up...")
+from base_service.base_service import BaseServiceBuilder
+from base_service.core.components.fastapi_component import FastAPIConfig
+
+service = (
+    BaseServiceBuilder()
+    .with_fastapi(config=FastAPIConfig())
+    .build()
+)
+service.run()
 ```
 
 ### `BaseComponent`
 
-The interface every component must implement. Subclass it and provide at minimum an `initialize()` method.
+The interface every component must implement. Subclass it and provide an `initialize()` method. Override `run()` and `stop()` only for components with a long-running lifecycle.
 
 | Method | Required | Purpose |
 |---|---|---|
@@ -46,33 +52,9 @@ class MyComponent(BaseComponent):
         await self._client.close()
 ```
 
-### `ComponentRegistry`
+### Built-in component
 
-A `StrEnum` used as the key when registering components with a service. Extend it to define the registry keys for your service.
-
-```python
-from enum import auto
-from base_service.core.enums.component_registry import ComponentRegistry
-
-class MyRegistry(ComponentRegistry):
-    DATABASE = auto()
-    MESSAGE_BUS = auto()
-```
-
-### `BaseServiceBuilder`
-
-Fluent builder for assembling a service before starting it.
-
-```python
-service = (
-    BaseServiceBuilder()
-    .with_component(DatabaseComponent(), MyRegistry.DATABASE)
-    .with_component(MessageBusComponent(), MyRegistry.MESSAGE_BUS)
-    .build()
-)
-
-service.start()
-```
+The builder exposes the components bundled with this library. Currently, `with_fastapi()` adds the FastAPI application and its ASGI server to the service.
 
 ## Installation
 

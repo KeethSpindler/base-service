@@ -4,8 +4,7 @@ from contextlib import asynccontextmanager
 import pytest
 from fastapi import APIRouter, FastAPI
 
-from base_service.config.config_manager import FastAPIConfig
-from base_service.core.components.fastapi_component import FastAPIComponent
+from base_service.core.components.fastapi_component import FastAPIComponent, FastAPIConfig
 
 
 def test_component_creates_app_from_config() -> None:
@@ -99,6 +98,25 @@ def test_run_creates_and_serves_configured_uvicorn_server(
     assert server.config.host == component._config.host
     assert server.config.port == component._config.port
     assert server.config.reload == component._config.reload
+
+
+def test_run_propagates_server_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    component = FastAPIComponent()
+
+    class FailingServer:
+        def __init__(self, config) -> None:
+            pass
+
+        async def serve(self) -> None:
+            raise RuntimeError("server failed")
+
+    monkeypatch.setattr(
+        "base_service.core.components.fastapi_component.uvicorn.Server",
+        FailingServer,
+    )
+
+    with pytest.raises(RuntimeError, match="server failed"):
+        asyncio.run(component.run())
 
 
 def test_stop_requests_server_shutdown() -> None:

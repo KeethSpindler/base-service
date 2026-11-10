@@ -5,15 +5,19 @@ class BaseComponent(ABC):
     """
     Component interface for all service components.
 
-    Each component should implement the `run` and `stop` for components with a long-running lifecycle.
+    Components must initialize themselves. Long-running lifecycle methods are
+    optional and are only called when overridden.
     """
 
     @abstractmethod
-    async def run(self) -> None:
-        """Run the component."""
+    def initialize(self) -> None:
+        """Perform one-time component setup."""
         pass
 
-    @abstractmethod
+    async def run(self) -> None:
+        """Run the component when it has a long-running lifecycle."""
+        pass
+
     async def stop(self) -> None:
-        """Stop the component."""
+        """Stop the component when it has a long-running lifecycle."""
         pass

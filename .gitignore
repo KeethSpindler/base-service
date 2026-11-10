@@ -221,3 +221,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Agent Resources
+CLAUDE.md
+PLAN.md
+AUDIT.md

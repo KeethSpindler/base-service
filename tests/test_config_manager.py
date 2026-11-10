@@ -1,20 +1,36 @@
-from base_service.config.config_manager import ConfigManager, FastAPIConfig
+from base_service.core.components.fastapi_component import FastAPIConfig
 
 
-def test_config_manager_uses_default_fastapi_config_when_none_provided() -> None:
-    manager = ConfigManager()
+def test_fastapi_config_uses_defaults_when_environment_is_unset(monkeypatch) -> None:
+    for key in (
+        "FASTAPI_HOST",
+        "FASTAPI_PORT",
+        "FASTAPI_DEBUG",
+        "FASTAPI_RELOAD",
+        "FASTAPI_CORS",
+    ):
+        monkeypatch.delenv(key, raising=False)
 
-    assert isinstance(manager.fastapi_config, FastAPIConfig)
-    assert manager.fastapi_config.host == "127.0.0.1"
-    assert manager.fastapi_config.port == 8000
-    assert manager.fastapi_config.debug is False
-    assert manager.fastapi_config.reload is False
+    config = FastAPIConfig()
+
+    assert config.host == "127.0.0.1"
+    assert config.port == 8000
+    assert config.debug is False
+    assert config.reload is False
+    assert config.cors == ["*"]
 
 
-def test_config_manager_uses_provided_fastapi_config_instance() -> None:
-    config = FastAPIConfig(host="0.0.0.0", port=9000)
-    manager = ConfigManager(fastapi_config=config)
+def test_fastapi_config_environment_overrides_explicit_defaults(monkeypatch) -> None:
+    monkeypatch.setenv("FASTAPI_HOST", "0.0.0.0")
+    monkeypatch.setenv("FASTAPI_PORT", "9000")
+    monkeypatch.setenv("FASTAPI_DEBUG", "yes")
+    monkeypatch.setenv("FASTAPI_RELOAD", "1")
+    monkeypatch.setenv("FASTAPI_CORS", "https://one.example,https://two.example")
 
-    assert manager.fastapi_config is config
-    assert manager.fastapi_config.host == "0.0.0.0"
-    assert manager.fastapi_config.port == 9000
+    config = FastAPIConfig(host="localhost", port=7000)
+
+    assert config.host == "0.0.0.0"
+    assert config.port == 9000
+    assert config.debug is True
+    assert config.reload is True
+    assert config.cors == ["https://one.example", "https://two.example"]
