@@ -2,22 +2,14 @@ from abc import ABC, abstractmethod
 
 
 class BaseComponent(ABC):
-    """
-    Component interface for all service components.
-
-    Components must initialize themselves. Long-running lifecycle methods are
-    optional and are only called when overridden.
-    """
+    """Interface for asynchronously managed service components."""
 
     @abstractmethod
-    def initialize(self) -> None:
+    async def initialize(self) -> None:
         """Perform one-time component setup."""
-        pass
 
     async def run(self) -> None:
-        """Run the component when it has a long-running lifecycle."""
-        pass
+        """Run the component when it owns a long-running task."""
 
     async def stop(self) -> None:
-        """Stop the component when it has a long-running lifecycle."""
-        pass
+        """Release resources acquired during the component lifecycle."""

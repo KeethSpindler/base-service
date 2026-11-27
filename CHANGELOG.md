@@ -25,6 +25,29 @@ Use this template for each new release:
 
 ## Entries
 
+### [v0.3.0] - 2026-11-27 (Keeth Spindler)
+
+#### Added
+
+- Async lifecycle state and generic component registration by string or enum key
+- Cancellation and partial-startup cleanup behavior
+- Grouped reporting for multiple shutdown failures
+
+#### Changed
+
+- Component initialization is asynchronous
+- Service lifecycle follows registration order during startup and reverse order
+  during shutdown
+- Component registration is limited to explicit bundled-component setters
+- `run()`, `bootstrap()`, one internal driver, and `shutdown()` own the
+  lifecycle
+
+#### Fixed
+
+- Failed startup and runtime tasks now trigger component cleanup
+- Shutdown continues after individual component failures
+- Repeated shutdown requests share one cleanup operation
+
 ### [0.2.0] - 2026-11-09 (Keeth Spindler)
 
 #### Features

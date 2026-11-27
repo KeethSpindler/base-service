@@ -40,7 +40,7 @@ class FastAPIComponent(BaseComponent):
         self._server: uvicorn.Server | None = None
         self.app: FastAPI = app if app is not None else self._get_app(self._config)
 
-    def initialize(self) -> None:
+    async def initialize(self) -> None:
         """The app is configured during construction; no additional setup is needed."""
 
     def _get_app(self, config: FastAPIConfig) -> FastAPI:

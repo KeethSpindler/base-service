@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import APIRouter, FastAPI
@@ -34,7 +35,7 @@ def test_attach_lifespan_registers_callable() -> None:
     component = FastAPIComponent()
 
     @asynccontextmanager
-    async def lifespan(app: FastAPI):
+    async def lifespan(_app: FastAPI):
         yield
 
     component.attach_lifespan(lifespan)
@@ -69,70 +70,60 @@ def test_add_api_router_rejects_non_router() -> None:
         component.add_api_router(None)
 
 
-def test_run_creates_and_serves_configured_uvicorn_server(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    component = FastAPIComponent()
-    created_servers = []
+def test_run_creates_and_serves_configured_uvicorn_server() -> None:
+    config = FastAPIConfig(host="127.0.0.1", port=8000)
+    component = FastAPIComponent(config=config)
+    server = MagicMock()
+    server.serve = AsyncMock()
 
-    class FakeServer:
-        def __init__(self, config) -> None:
-            self.config = config
-            self.served = False
-            self.should_exit = False
-            created_servers.append(self)
-
-        async def serve(self) -> None:
-            self.served = True
-
-    monkeypatch.setattr(
-        "base_service.core.components.fastapi_component.uvicorn.Server", FakeServer
-    )
-
-    asyncio.run(component.run())
-
-    server = created_servers[0]
-    assert component._server is server
-    assert server.served is True
-    assert server.config.app is component.app
-    assert server.config.host == component._config.host
-    assert server.config.port == component._config.port
-    assert server.config.reload == component._config.reload
-
-
-def test_run_propagates_server_errors(monkeypatch: pytest.MonkeyPatch) -> None:
-    component = FastAPIComponent()
-
-    class FailingServer:
-        def __init__(self, config) -> None:
-            pass
-
-        async def serve(self) -> None:
-            raise RuntimeError("server failed")
-
-    monkeypatch.setattr(
+    with patch(
         "base_service.core.components.fastapi_component.uvicorn.Server",
-        FailingServer,
-    )
-
-    with pytest.raises(RuntimeError, match="server failed"):
+        return_value=server,
+    ) as server_class:
         asyncio.run(component.run())
+
+    server.serve.assert_awaited_once_with()
+    assert server_class.call_args.args[0].app is component.app
+    assert server_class.call_args.args[0].host == config.host
+    assert server_class.call_args.args[0].port == config.port
+    assert server_class.call_args.args[0].reload == config.reload
+
+
+def test_run_propagates_server_errors() -> None:
+    component = FastAPIComponent()
+    server = MagicMock()
+    server.serve = AsyncMock(side_effect=RuntimeError("server failed"))
+
+    with patch(
+        "base_service.core.components.fastapi_component.uvicorn.Server",
+        return_value=server,
+    ):
+        with pytest.raises(RuntimeError, match="server failed"):
+            asyncio.run(component.run())
 
 
 def test_stop_requests_server_shutdown() -> None:
     component = FastAPIComponent()
+    server = MagicMock(should_exit=False)
+    server.serve = AsyncMock()
 
-    class FakeServer:
-        should_exit = False
+    with patch(
+        "base_service.core.components.fastapi_component.uvicorn.Server",
+        return_value=server,
+    ):
+        asyncio.run(component.run())
+        asyncio.run(component.stop())
 
-    component._server = FakeServer()
-
-    asyncio.run(component.stop())
-
-    assert component._server.should_exit is True
+    assert server.should_exit is True
 
 
 def test_stop_without_running_server_is_a_noop() -> None:
     component = FastAPIComponent()
 
     asyncio.run(component.stop())
+
+
+def test_initialize_is_async_noop() -> None:
+    component = FastAPIComponent()
+
+    asyncio.run(component.initialize())

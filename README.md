@@ -8,12 +8,14 @@ Foundation library for building component-driven microservices. Provides a `Base
 
 The service container. Manages the lifecycle of all registered components:
 
-1. **Initialize** — calls `initialize()` on every component.
-2. **Startup** — runs the overridable `startup()` hook for any pre-run service logic. The legacy `bootstrap()` hook delegates to `startup()`.
-3. **Run** — concurrently gathers `run()` coroutines for all components that override it.
-4. **Shutdown** — concurrently gathers `stop()` coroutines for all components that override it.
+1. **Initialize** — awaits `initialize()` on every component in registration order.
+2. **Bootstrap** — runs the overridable `bootstrap()` hook for pre-run service logic.
+3. **Run** — runs every component's async `run()` method concurrently.
+4. **Shutdown** — awaits `stop()` in reverse registration order, including after
+   partial startup.
 
-Subclass `BaseService` to create a concrete service. Override `startup()` to inject logic that runs after components are initialized but before they start.
+Subclass `BaseService` to create a concrete service. Override `bootstrap()` to
+inject logic that runs after components are initialized but before they start.
 
 ```python
 from base_service.base_service import BaseServiceBuilder
@@ -29,19 +31,22 @@ service.run()
 
 ### `BaseComponent`
 
-The interface every component must implement. Subclass it and provide an `initialize()` method. Override `run()` and `stop()` only for components with a long-running lifecycle.
+The interface every component must implement. Subclass it and provide an
+`initialize()` method. Override `run()` and `stop()` when the component owns
+runtime work or resources.
 
 | Method | Required | Purpose |
 |---|---|---|
-| `initialize()` | Yes | One-time setup (config loading, client creation, etc.) |
-| `run()` | No | Long-running async loop. Only called if overridden. |
-| `stop()` | No | Graceful teardown. Only called if overridden. |
+| `initialize()` | Yes | One-time async setup (config loading, client creation, etc.) |
+| `run()` | No | Concurrent async runtime work. Base implementation is a no-op. |
+| `stop()` | No | Async cleanup called for every attempted component. |
 
-Components that don't override `run()` or `stop()` are treated as utility components and are skipped during the gather phases.
+Components implement lifecycle methods asynchronously. Utility components can
+keep the base `run()` and `stop()` no-op methods.
 
 ```python
 class MyComponent(BaseComponent):
-    def initialize(self):
+    async def initialize(self):
         self._client = create_client()
 
     async def run(self) -> None:
