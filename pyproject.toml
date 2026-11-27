@@ -1,12 +1,13 @@
 [project]
 name = "base-service"
-version = "0.3.0"
+version = "0.4.0"
 description = "Base service component used as the foundation for building microservices."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.117.0",
     "pydantic>=2.13.5",
+    "pydantic-settings>=2.11.0",
     "uvicorn>=0.37.0",
 ]
 

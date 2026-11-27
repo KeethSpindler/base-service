@@ -3,7 +3,7 @@
 ## Target Version and Status
 
 - **Version:** `v0.4.0`
-- **Status:** Planned
+- **Status:** Complete
 
 ## Scope
 

@@ -61,6 +61,74 @@ class MyComponent(BaseComponent):
 
 The builder exposes the components bundled with this library. Currently, `with_fastapi()` adds the FastAPI application and its ASGI server to the service.
 
+### Settings
+
+`ServiceSettings` loads validated service configuration from environment
+variables. Explicit constructor values take precedence over environment
+values. Derived services can extend the model with component-specific fields.
+
+```python
+from pydantic import SecretStr
+
+from base_service import ServiceSettings
+
+
+class OrdersSettings(ServiceSettings):
+    database_dsn: SecretStr
+```
+
+Use `settings_for_logging()` before rendering settings. It redacts `SecretStr`
+values and conventional secret field names. Additional custom fields can be
+passed through `redacted_fields`.
+
+```python
+from base_service.config.settings import settings_for_logging
+
+settings = ServiceSettings(service_name="orders")
+safe_settings = settings_for_logging(settings)
+```
+
+`BaseServiceBuilder` accepts settings and configures the logger once:
+
+```python
+service = BaseServiceBuilder(settings=settings).with_fastapi().build()
+```
+
+### Observability
+
+Text and JSON logging use consistent service, component, event, action,
+lifecycle, severity, and correlation fields. Correlation context propagates
+through awaited operations:
+
+```python
+from base_service.core.util.logging import correlation_context
+
+with correlation_context("request-123"):
+    await perform_work()
+```
+
+### Health
+
+Override `BaseComponent.health()` to return a `HealthCheckResult`. Mark
+components that are not required for service readiness with
+`readiness_required = False`.
+
+```python
+from base_service import HealthCheckResult, HealthStatus
+
+
+async def health(self) -> HealthCheckResult:
+    return HealthCheckResult(
+        component="database",
+        status=HealthStatus.HEALTHY,
+    )
+```
+
+`await service.liveness()` checks event-loop continuity. `await
+service.readiness()` runs all component checks concurrently, bounds each
+check, and aggregates the required components into a `ServiceHealthResult`.
+Optional components remain visible in the report without degrading readiness.
+
 ## Installation
 
 Requires Python 3.13+.

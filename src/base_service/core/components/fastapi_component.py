@@ -1,6 +1,5 @@
 """FastAPI component implementation for service composition."""
 
-from logging import getLogger
 from os import getenv
 from typing import Any, Callable
 
@@ -12,8 +11,9 @@ import uvicorn
 
 from base_service.core.components.base_component import BaseComponent
 from base_service import __service_name__, __version__
+from base_service.core.util.logging import get_component_logger
 
-logger = getLogger(f"{__service_name__}.FastAPIComponent")
+logger = get_component_logger(__service_name__, "FastAPIComponent")
 
 
 class FastAPIConfig:
@@ -85,17 +85,45 @@ class FastAPIComponent(BaseComponent):
 
         self._server = uvicorn.Server(uvicorn_config)
 
-        logger.info("Starting FastAPI ASGI server...")
+        logger.info(
+            "Starting FastAPI ASGI server",
+            extra={
+                "event": "server.start",
+                "action": "serve",
+                "lifecycle_state": "running",
+            },
+        )
         try:
             await self._server.serve()
         finally:
-            logger.info("FastAPI ASGI server has stopped.")
+            logger.info(
+                "FastAPI ASGI server has stopped",
+                extra={
+                    "event": "server.stop",
+                    "action": "serve",
+                    "lifecycle_state": "stopped",
+                },
+            )
 
     async def stop(self) -> None:
         """Request graceful server shutdown."""
         if self._server is not None:
-            logger.info("Stopping FastAPI ASGI server...")
+            logger.info(
+                "Stopping FastAPI ASGI server",
+                extra={
+                    "event": "server.shutdown",
+                    "action": "stop",
+                    "lifecycle_state": "stopping",
+                },
+            )
             self._server.should_exit = True
-            logger.info("FastAPI ASGI server shutdown requested.")
+            logger.info(
+                "FastAPI ASGI server shutdown requested",
+                extra={
+                    "event": "server.shutdown_requested",
+                    "action": "stop",
+                    "lifecycle_state": "stopping",
+                },
+            )
 
         

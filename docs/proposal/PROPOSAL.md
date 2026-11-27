@@ -19,10 +19,10 @@ The repository already provides:
 - a Python 3.13 base container
 - initial unit tests and package metadata
 
-After `v0.3.0`, the remaining roadmap gaps are:
+After `v0.4.0`, the remaining roadmap gaps are:
 
-- external integrations and Pydantic settings are absent
-- health, readiness, structured logging, and release checks are incomplete
+- external integrations remain absent
+- release checks and the FastAPI health contract are incomplete
 
 The async lifecycle and composition segment closes the baseline container gaps
 before new external integrations are added.
@@ -34,7 +34,7 @@ before new external integrations are added.
 | `v0.1.0` | Initial component container | Complete | Historical base package |
 | `v0.2.0` | FastAPI component | Complete | Historical FastAPI baseline |
 | `v0.3.0` | [Async lifecycle and composition](./01-async-lifecycle.md) | Complete | Reliable, generic service lifecycle |
-| `v0.4.0` | [Settings and observability](./02-settings-observability.md) | Planned | Typed configuration, logging, health contracts |
+| `v0.4.0` | [Settings and observability](./02-settings-observability.md) | Complete | Typed configuration, logging, health contracts |
 | `v0.5.0` | [FastAPI service contract](./03-fastapi-contract.md) | Planned | Extensible web component and health routes |
 | `v0.6.0` | [PostgreSQL component](./04-postgresql.md) | Planned | Managed async pool and repository-facing interface |
 | `v0.7.0` | [HTTP client component](./05-http-client.md) | Planned | Managed HTTPX client |

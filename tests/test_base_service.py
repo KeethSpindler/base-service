@@ -16,6 +16,7 @@ from base_service.core.components.fastapi_component import (
     FastAPIConfig,
 )
 from base_service.core.enums.component_registry import ComponentRegistry
+from base_service.config.settings import ServiceSettings
 
 
 class RecordingComponent(BaseComponent):
@@ -91,6 +92,17 @@ def test_builder_builds_supplied_service() -> None:
     service = BaseServiceBuilder(custom_service).with_fastapi().build()
 
     assert service is custom_service
+
+
+def test_builder_applies_supplied_service_settings() -> None:
+    settings = ServiceSettings(
+        service_name="configured-service",
+        log_format="text",
+    )
+
+    service = BaseServiceBuilder(settings=settings).build()
+
+    assert service.settings is settings
 
 
 def test_builder_with_fastapi_runs_configured_component() -> None:
